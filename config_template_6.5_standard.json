@@ -10,16 +10,11 @@
     "NSXOVA":   "<Full PAth to NSX manager ova>",
     "ESXi65OfflineBundle":  "<Full PAth to Offline Bundle  ex:  C:\\Users\\primp\\Desktop\\ESXi650-201701001\\vmw-ESXi-6.5.0-metadata.zip",
     "ESXiProfileName" : "<profile name for online upgrade only  ex: ESXi-6.5.0-20170404001-standard>",
-    "NestedESXiHostnameToIPs": [        {
-            "<esxiHostname 1>": "<esxi Host1 IP>"
-        },
-        {
-            "<esxiHostname 2>": "<esxi Host2 IP>"
-        },
-        {
-            "<esxiHostname 3>": "<esxi Host3 IP>"
-        }
-    ],
+    "NestedESXiHostnameToIPs" : {
+            "<esxiHostname 1>" : "<esxi Host1 IP>",
+            "<esxiHostname 2>" : "<esxi Host2 IP>",
+            "<esxiHostname 3>" : "<esxi Host3 IP>"
+    },
     "NestedESXivCPU": "<num vCPUs>",
     "NestedESXivMEM": "<GBs of RAM>",
     "NestedESXiCachingvDisk": "<GBs of Disk>",
