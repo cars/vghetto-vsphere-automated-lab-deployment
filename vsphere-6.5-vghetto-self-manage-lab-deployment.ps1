@@ -20,67 +20,6 @@
 # 02/17/17
 #   * Added missing dvFilter param to eth1 (missing in Nested ESXi OVA)
 
-# Physical ESXi host or vCenter Server to deploy vSphere 6.5 lab
-$VIServer = "vcenter.primp-industries.com"
-$VIUsername = "administrator@vsphere.local"
-$VIPassword = "!!!MySuperDuperSecurePassword!!!"
-
-# Specifies whether deployment is to an ESXi host or vCenter Server
-# Use either ESXI or VCENTER
-$DeploymentTarget = "VCENTER"
-
-# Full Path to both the Nested ESXi 6.5 VA + extracted VCSA 6.5 ISO
-$NestedESXiApplianceOVA = "C:\Users\primp\Desktop\Nested_ESXi6.5_Appliance_Template_v1.ova"
-$VCSAInstallerPath = "C:\Users\primp\Desktop\VMware-VCSA-all-6.5.0-4944578"
-
-# Nested ESXi VMs to deploy
-$NestedESXiHostnameToIPs = @{
-"vesxi65-1" = "172.30.0.171"
-"vesxi65-2" = "172.30.0.172"
-"vesxi65-3" = "172.30.0.173"
-}
-
-#Nested ESXi Bootstrap Node
-$bootStrapNode = "172.30.0.171"
-
-# Nested ESXi VM Resources
-$NestedESXivCPU = "2"
-$NestedESXivMEM = "32" #GB
-$NestedESXiCachingvDisk = "16" #GB
-$NestedESXiCapacityvDisk = "200" #GB
-
-# VCSA Deployment Configuration
-$VCSADeploymentSize = "tiny"
-$VCSADisplayName = "vcenter65-1"
-$VCSAIPAddress = "172.30.0.170"
-$VCSAHostname = "vcenter65-1.primp-industries.com" #Change to IP if you don't have valid DNS
-$VCSAPrefix = "24"
-$VCSASSODomainName = "vghetto.local"
-$VCSASSOSiteName = "virtuallyGhetto"
-$VCSASSOPassword = "VMware1!"
-$VCSARootPassword = "VMware1!"
-$VCSASSHEnable = "true"
-
-# General Deployment Configuration for both Nested ESXi VMs + VCSA
-$VMNetwork = "access333"
-$VMDatastore = "himalaya-local-SATA-dc3500-2"
-$VMNetmask = "255.255.255.0"
-$VMGateway = "172.30.0.1"
-$VMDNS = "172.30.0.100"
-$VMNTP = "pool.ntp.org"
-$VMPassword = "vmware123"
-$VMDomain = "primp-industries.com"
-$VMSyslog = "172.30.0.170"
-# Applicable to Nested ESXi only
-$VMSSH = "true"
-$VMVMFS = "false"
-# Applicable to VC Deployment Target only
-$VMCluster = "Primp-Cluster"
-
-# Name of new vSphere Datacenter/Cluster when VCSA is deployed
-$NewVCDatacenterName = "Datacenter"
-$NewVCVSANClusterName = "VSAN-Cluster"
-
 #### DO NOT EDIT BEYOND HERE ####
 
 $verboseLogFile = "vsphere65-vghetto-lab-deployment.log"
@@ -102,6 +41,29 @@ $moveVMsIntovApp = 1
 
 $StartTime = Get-Date
 
+# Read in JSON file with configuration values and dynamically generate all the variables needed to run script
+function Get-ConfigValues {
+    param( [Parameter(Mandatory=$true)][String]$ConfigFile  )
+    
+    $VVLDConfig = Get-Content $ConfigFile  | convertFrom-JSON
+    # Create variables from each of the JSON key value pairs... Simple case is here
+    $vvldconfig  | Get-Member -MemberType NoteProperty | ? {$_.Definition -match "string"}| ForEach-Object {   
+        Set-Variable -Name $_.name -Value $_.definition.split("=")[1] -Scope script
+    }
+    #Create variables/hashtable where appropriate
+    $vvldconfig  | Get-Member -MemberType NoteProperty | ? {$_.Definition -match "PSCustomObject"}| ForEach-Object {
+        $TmpHash = @{}
+        $hashEntries = $_.definition.split("@")[1].split(";")
+        foreach ($hashentry in $hashEntries){
+            $key = $hashEntry.split("=")[0].Replace("{","")
+            $value = $hashEntry.split("=")[1].Replace("}","")
+            $TmpHash[$key] = $value
+        }    
+        Set-Variable -Name $_.name -Value $TmpHash -Scope script;
+    }
+}
+
+
 Function My-Logger {
     param(
     [Parameter(Mandatory=$true)]
@@ -114,6 +76,21 @@ Function My-Logger {
     Write-Host -ForegroundColor Green " $message"
     $logMessage = "[$timeStamp] $message"
     $logMessage | Out-File -Append -LiteralPath $verboseLogFile
+}
+
+#Script starts here......
+#Make sure JSON config file was passed as a param
+$ConfigFile =  $args[0]
+if ($ConfigFile -eq $null){ 
+    Write-Host -ForegroundColor Red  "`nConfig File Not Specified`n"
+    exit
+    
+}
+if (! (Test-Path $ConfigFile)) {
+    Write-Host -ForegroundColor Red  "`nCouldn't Find Config File: [" $Args[0] "]`n"
+    exit
+} else {
+    Get-ConfigValues $ConfigFile
 }
 
 if($preCheck -eq 1) {

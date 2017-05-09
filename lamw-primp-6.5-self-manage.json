@@ -1,4 +1,4 @@
-{   
+{
     "__version": "0.0.5",
     "__comments": "Sample JSON config using the default/example values from @lamw's 6.5-self manage lab deployment script",
     "VIServer": "vcenter.primp-industries.com",
@@ -40,5 +40,5 @@
     "VMVMFS": "false",
     "VMCluster": "Primp-Cluster",
     "NewVCDatacenterName": "Datacenter",
-    "NewVCVSANClusterName": "VSAN-Cluster",
+    "NewVCVSANClusterName": "VSAN-Cluster"
 }

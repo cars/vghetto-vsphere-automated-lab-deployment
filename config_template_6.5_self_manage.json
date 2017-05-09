@@ -40,5 +40,5 @@
     "VMVMFS": "<false>",
     "VMCluster": "<Cluster Name in new VCSA>",
     "NewVCDatacenterName": "<Name for new Datacenter in VCSA>",
-    "NewVCVSANClusterName": "<Name for new VSAN-Cluster in vCSA>",
+    "NewVCVSANClusterName": "<Name for new VSAN-Cluster in vCSA>"
 }
