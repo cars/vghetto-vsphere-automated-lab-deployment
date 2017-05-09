@@ -1,4 +1,6 @@
 {
+    "__version": "0.0.5",
+    "__comments": "Sample JSON config file using the default/example values from @lamw's 6.5-standard lab deployment script",
     "VIServer": "vcenter.primp-industries.com",
     "VIUsername": "administrator@vsphere.local",
     "VIPassword": "!!!MySuperDuperSecurePassword!!!",

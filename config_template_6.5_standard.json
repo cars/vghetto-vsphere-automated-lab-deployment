@@ -1,4 +1,6 @@
 {
+    "__version": "0.0.5",
+    "__comments": "Template JSON Config file describing what each (or most) of the values are",
     "VIServer": "<Physical ESXi host or vCenter Server to deploy vSphere 6.5 lab>",
     "VIUsername": "<either in form of user (for ESXI)   or user@ssodomain (for vCenter)>",
     "VIPassword": "<password for VIUsername>",
