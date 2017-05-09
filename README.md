@@ -45,10 +45,6 @@ Automated deployment of a fully functional vSphere 6.0u2 or 6.5 environment that
   * Support for adding ESXi hosts into VC using DNS name (disabled by default)
   * Added CPU/MEM/Storage resource requirements in confirmation screen
 
-* **05/08/17**
-  * Support for patching ESXi using VMware Online repo thanks to Matt Lichstein for contribution
-  * Added fix to test ESXi endpoint before trying to patch
-
 ## Requirements
 * 1 x Physical ESXi host or vCenter Server running at least vSphere 6.0u2 or later
 * Windows system
@@ -79,115 +75,118 @@ Here is a quick diagram to help illustrate the two deployment scenarios. The pES
 
 ## Configuration
 
+The configuration resides in an external JSON file that needs to be passed as a parameter when the script is run. 
+
 This section describes the location of the files required for deployment. The first two are mandatory for the basic deployment. For advanced deployments such as NSX 6.3, you will need to download additional files and below are examples of what is required.
 
-```console
-$NestedESXiApplianceOVA = "C:\Users\primp\Desktop\Nested_ESXi6.5_Appliance_Template_v1.ova"
-$VCSAInstallerPath = "C:\Users\primp\Desktop\VMware-VCSA-all-6.5.0-4944578"
-$NSXOVA =  "C:\Users\primp\Desktop\VMware-NSX-Manager-6.3.0-5007049.ova"
-$ESXi65aOfflineBundle = "C:\Users\primp\Desktop\ESXi650-201701001\vmw-ESXi-6.5.0-metadata.zip"
+```json
+"NestedESXiApplianceOVA" : "C:\\Users\\primp\\Desktop\\Nested_ESXi6.5_Appliance_Template_v1.ova",
+"VCSAInstallerPath" : "C:\\Users\\primp\\Desktop\\VMware-VCSA-all-6.5.0-4944578",
+"NSXOVA" : "C:\\Users\\primp\\Desktop\\VMware-NSX-Manager-6.3.0-5007049.ova",
+"ESXi65aOfflineBundle" : "C:\\Users\\primp\\Desktop\\ESXi650-201701001\\vmw-ESXi-6.5.0-metadata.zip",
 ```
 
 This section describes the credentials to your physical ESXi server or vCenter Server in which the vSphere lab environment will be deployed to:
-```console
-$VIServer = "himalaya.primp-industries.com"
-$VIUsername = "root"
-$VIPassword = "vmware123"
+```json
+"VIServer" : "himalaya.primp-industries.com",
+"VIUsername" : "root",
+"VIPassword" : "vmware123",
 ```
 
 This section describes whether your deployment environment (destination) will be an ESXi host or a vCenter Server. You will need to specify either **ESXI** or **VCENTER** keyword:
-```console
-$DeploymentTarget = "ESXI"
+```json
+"DeploymentTarget" : "ESXI",
 ```
 
 This section defines the number of Nested ESXi VMs to deploy along with their associated IP Address(s). The names are merely the display name of the VMs when deployed. At a minimum, you should deploy at least three hosts, but you can always add additional hosts and the script will automatically take care of provisioning them correctly.
-```console
-$NestedESXiHostnameToIPs = @{
-"vesxi65-1" = "172.30.0.171"
-"vesxi65-2" = "172.30.0.172"
-"vesxi65-3" = "172.30.0.173"
-}
+```json
+"NestedESXiHostnameToIPs" : {
+  "vesxi65-1" : "172.30.0.171",
+  "vesxi65-2" : "172.30.0.172",
+  "vesxi65-3" : "172.30.0.173"
+},
 ```
 
 This section describes the resources allocated to each of the Nested ESXi VM(s). Depending on the deployment type, you may need to increase the resources. For Memory and Disk configuration, the unit is in GB.
-```console
-$NestedESXivCPU = "2"
-$NestedESXivMEM = "6"
-$NestedESXiCachingvDisk = "4"
-$NestedESXiCapacityvDisk = "8"
+```json
+"NestedESXivCPU" : "2",
+"NestedESXivMEM" : "6",
+"NestedESXiCachingvDisk" : "4",
+"NestedESXiCapacityvDisk" : "8",
 ```
 
-This section describes the VCSA deployment configuration such as the VCSA deployment size, Networking & SSO configurations. If you have ever used the VCSA CLI Installer, these options should look familiar.
-```console
-$VCSADeploymentSize = "tiny"
-$VCSADisplayName = "vcenter65-1"
-$VCSAIPAddress = "172.30.0.170"
-$VCSAHostname = "vcenter65-1.primp-industries.com" #Change to IP if you don't have valid DNS
-$VCSAPrefix = "24"
-$VCSASSODomainName = "vghetto.local"
-$VCSASSOSiteName = "virtuallyGhetto"
-$VCSASSOPassword = "VMware1!"
-$VCSARootPassword = "VMware1!"
-$VCSASSHEnable = "true"
+This section describes the VCSA deployment configuration such as the VCSA deployment size, Networking & SSO configurations. If you have ever used the VCSA CLI Installer, these options should look familiar. *If you don't have valid DNS change VCSAHostName to an IP*
+```json
+"VCSADeploymentSize" : "tiny",
+"VCSADisplayName" : "vcenter65-1",
+"VCSAIPAddress" : "172.30.0.170",
+"VCSAHostname" : "vcenter65-1.primp-industries.com", 
+"CSAPrefix" : "24",
+"VCSASSODomainName" : "vghetto.local",
+"VCSASSOSiteName" : "virtuallyGhetto",
+"VCSASSOPassword" : "VMware1!",
+"VCSARootPassword" : "VMware1!",
+"VCSASSHEnable" : "true",
 ```
 
-This section describes the location as well as the generic networking settings applied to BOTH the Nested ESXi VM and VCSA.
-```console
-$VirtualSwitchType = "VDS" # VSS or VDS for both $VMNetwork & $PrivateVXLANVMNetwork
-$VMNetwork = "dv-access333-dev"
-$VMDatastore = "himalaya-local-SATA-dc3500-2"
-$VMNetmask = "255.255.255.0"
-$VMGateway = "172.30.0.1"
-$VMDNS = "172.30.0.100"
-$VMNTP = "pool.ntp.org"
-$VMPassword = "vmware123"
-$VMDomain = "primp-industries.com"
-$VMSyslog = "172.30.0.170"
-# Applicable to Nested ESXi only
-$VMSSH = "true"
-$VMVMFS = "false"
-# Applicable to VC Deployment Target only
-$VMCluster = "Primp-Cluster"
+This section describes the location as well as the generic networking settings applied to BOTH the Nested ESXi VM and VCSA.  VirtualSwitchType should be VSS or VDS for both VMNetwork & PrivateVXLANVMNetwork
+```json
+"VirtualSwitchType" : "VDS" ,
+"VMNetwork" : "dv-access333-dev",
+"VMDatastore" : "himalaya-local-SATA-dc3500-2",
+"VMNetmask" : "255.255.255.0",
+"VMGateway" : "172.30.0.1",
+"VMDNS" : "172.30.0.100",
+"VMNTP" : "pool.ntp.org",
+"VMPassword" : "vmware123",
+"VMDomain" : "primp-industries.com",
+"VMSyslog" : "172.30.0.170",
 ```
+The two settings below are  Applicable to Nested ESXi only
+```json
+"VMSSH" : "true",
+"VMVMFS" : "false",
+````
+This is applicable to VC Deployment Target only
+````json
+"VMCluster" : "Primp-Cluster",
+````
 
 This section describes the configuration of the new vCenter Server from the deployed VCSA.
-```console
-$NewVCDatacenterName = "Datacenter"
-$NewVCVSANClusterName = "VSAN-Cluster"
+```json
+"NewVCDatacenterName" : "Datacenter",
+"NewVCVSANClusterName" : "VSAN-Cluster",
 ```
 
 This section describes the NSX configuration if you choose to deploy which will require you to set $DeployNSX property to 1 and fill out all fields.
-```console
-$DeployNSX = 0
-$NSXvCPU = "2" # Reconfigure NSX vCPU
-$NSXvMEM = "8" # Reconfigure NSX vMEM (GB)
-$NSXDisplayName = "nsx63-1"
-$NSXHostname = "nsx63-1.primp-industries.com"
-$NSXIPAddress = "172.30.0.250"
-$NSXNetmask = "255.255.255.0"
-$NSXGateway = "172.30.0.1"
-$NSXSSHEnable = "true"
-$NSXCEIPEnable = "false"
-$NSXUIPassword = "VMw@re123!"
-$NSXCLIPassword = "VMw@re123!"
+```json
+"DeployNSX" : 0,
+"NSXvCPU" :"2", 
+"NSXvMEM" : "8", 
+"NSXDisplayName" : "nsx63-1",
+"NSXHostname" :"nsx63-1.primp-industries.com",
+"NSXIPAddress" :"172.30.0.250",
+"NSXNetmask" : "255.255.255.0",
+"NSXGateway" :"172.30.0.1",
+"NSXSSHEnable" :"true",
+"NSXCEIPEnable" : "false",
+"NSXUIPassword" : "VMw@re123!",
+"NSXCLIPassword" : "VMw@re123!",
 ```
 
 This section describes the VDS and VXLAN configurations which is required for NSX deployment. The only mandatory field here is $PrivateVXLANVMnetwork which is a private portgroup that must already exists which will be used to connect the second network adapter of the Nested ESXi VM for VXLAN traffic. You do not need a routable portgroup and the other properties can be left as default or you can modify them if you wish.
-```console
-# VDS / VXLAN Configurations
-$PrivateVXLANVMNetwork = "dv-private-network" # Existing Portgroup
-$VDSName = "VDS-6.5"
-$VXLANDVPortgroup = "VXLAN"
-$VXLANSubnet = "172.16.66."
-$VXLANNetmask = "255.255.255.0"
+```js
+"PrivateVXLANVMNetwork": "dv-private-network",
+"VDSName" : "VDS-6.5",
+"VXLANDVPortgroup" : "VXLAN",
+"VXLANSubnet" : "172.16.66.",
+"VXLANNetmask" : "255.255.255.0",
 ```
 
-This section describes some advanced options for the deployment. Th first setting adds the ESXi hosts into vCenter Server using DNS names (must have both forward/reverse DNS working in your environment). The second option will upgrade the Nested ESXi 6.5 VMs to ESXi 6.5a which is required if you are deploying NSX 6.3 or if you just want to run the latest version of ESXi, you can also enable this. Both of these settings are disabled by default
-```console
-# Set to 1 only if you have DNS (forward/reverse) for ESXi hostnames
-$addHostByDnsName = 0
-# Upgrade vESXi hosts to 6.5a
-$upgradeESXiTo65a = 0
+This section describes some advanced options for the deployment. Th first setting `addHostByDNSName` adds the ESXi hosts into vCenter Server using DNS names (must have both forward/reverse DNS working in your environment). The second option, `upgradedESXiTo65a` will upgrade the Nested ESXi 6.5 VMs to ESXi 6.5a which is required if you are deploying NSX 6.3 or if you just want to run the latest version of ESXi, you can also enable this. Both of these settings are disabled by default
+```json
+"addHostByDnsName" : 0,
+"upgradeESXiTo65a": 0,
 ```
 
 Once you have saved your changes, you can now run the PowerCLI script as you normally would.
