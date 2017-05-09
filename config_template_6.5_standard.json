@@ -11,13 +11,13 @@
     "ESXi65OfflineBundle":  "<Full PAth to Offline Bundle  ex:  C:\\Users\\primp\\Desktop\\ESXi650-201701001\\vmw-ESXi-6.5.0-metadata.zip",
     "ESXiProfileName" : "<profile name for online upgrade only  ex: ESXi-6.5.0-20170404001-standard>",
     "NestedESXiHostnameToIPs": [        {
-            "<esxiHostname 1>": "<esxi Host IP1>"
+            "<esxiHostname 1>": "<esxi Host1 IP>"
         },
         {
-            "<esxiHostname 2>": "<esxi Host IP2>"
+            "<esxiHostname 2>": "<esxi Host2 IP>"
         },
         {
-            "<esxiHostname 3>": "<esxi Host IP3>"
+            "<esxiHostname 3>": "<esxi Host3 IP>"
         }
     ],
     "NestedESXivCPU": "<num vCPUs>",
